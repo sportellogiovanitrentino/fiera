@@ -40,18 +40,19 @@
     background: var(--card); color: var(--ink); border-radius: 50%;
     border: 4px solid var(--accent);
     box-shadow: 0 8px 22px rgba(0,0,0,.3);
-    font-weight: 800; font-size: clamp(12px, 3.7vw, 19px); line-height: 1.08;
+    font-weight: 800; font-size: clamp(11px, 3.4vw, 18px); line-height: 1.08;
     transition: transform .1s;
   }
   a.game:active { transform: translate(-50%, -50%) scale(.95); }
   a.game:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
-  a.game svg { width: 30%; height: auto; flex: none; }
+  a.game svg { width: 24%; height: auto; flex: none; }
   @media (prefers-reduced-motion: no-preference) {
     a.game { animation: galleggia 4s ease-in-out infinite; }
     a.game:nth-of-type(2) { animation-delay: -1.3s; }
     a.game:nth-of-type(3) { animation-delay: -2.6s; }
     a.game:nth-of-type(4) { animation-delay: -.7s; }
     a.game:nth-of-type(5) { animation-delay: -2s; }
+    a.game:nth-of-type(6) { animation-delay: -3.3s; }
   }
   @keyframes galleggia { 0%,100% { margin-top: 0; } 50% { margin-top: -5px; } }
   footer { text-align: center; margin-top: 14px; font-size: 15px; opacity: .8; line-height: 1.5; }
@@ -105,12 +106,33 @@
       descrizione: "Tre biglietti per la stessa città e il viaggio parte.",
       cartella: "tris-di-biglietti",
       disegno: "biglietto"
+    },
+    {
+      nome: "Torre di Valigie",
+      descrizione: "Fai cadere le valigie una sull'altra e costruisci la torre più alta.",
+      cartella: "torre-di-valigie",
+      disegno: "torre"
+    },
+    {
+      nome: "Valigie che Crescono",
+      descrizione: "Due valigie uguali diventano una valigia più grande. Hai due minuti.",
+      cartella: "valigie-che-crescono",
+      disegno: "valigia"
+    },
+    {
+      nome: "Timbra il Passaporto",
+      descrizione: "Tocca a tempo e timbra i passaporti per i paesi lontani.",
+      cartella: "timbra-il-passaporto",
+      disegno: "timbro"
     }
   ];
 
   var DISEGNI = {
     aereo: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#123a78" d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>',
     viaggiatori: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3.2" fill="#123a78"/><circle cx="16.5" cy="9" r="2.6" fill="#123a78"/><path fill="#123a78" d="M2 19c0-3.3 2.7-6 6-6s6 2.700 6 6v1H2zM15 20v-1.200c0-1.600-.5-3.100-1.400-4.300.9-.4 1.900-.600 2.900-.500 2.500.200 4.500 2.400 4.500 5v1z"/></svg>',
+    torre: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="15.500" width="18" height="5.500" rx="1.600" fill="#123a78"/><rect x="5" y="9.250" width="14" height="5.250" rx="1.600" fill="#123a78"/><rect x="8" y="3" width="9" height="5.250" rx="1.600" fill="#123a78"/></svg>',
+    valigia: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#123a78" d="M9 3h6a1 1 0 0 1 1 1v3h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3V4a1 1 0 0 1 1-1zm1 2v2h4V5z"/></svg>',
+    timbro: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="6" r="3.400" fill="#123a78"/><rect x="10.500" y="8" width="3" height="6.500" fill="#123a78"/><rect x="5" y="14" width="14" height="4.200" rx="1.300" fill="#123a78"/><rect x="4" y="19.500" width="16" height="2" rx="1" fill="#123a78"/></svg>',
     biglietto: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#123a78" d="M3 6h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4zm11 2v1.500h1.500V8zm0 3.250v1.500h1.500v-1.500zm0 3.250V16h1.500v-1.500z"/></svg>'
   };
 
