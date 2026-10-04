@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Che lingua è?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;900&family=Doto:wght@700;900&display=swap">
+<style>
+[hidden]{display:none!important}
+/* Layout: one-screen phone game - quadranti punti/record in alto, cuori e conteggio frasi sotto, fumetto con la frase al centro, risposte impilate in basso a portata di pollice */
+:root{
+  --muro:#F1E2C6;
+  --inchiostro:#1C2028;
+  --led:#FFB627;
+  --carta:#F7F7F5;
+  --pagina:#FBF6E9;
+  --grigio:#5E6673;
+  --giusto:#1E6B4E;
+  --sbagliato:#B3261E;
+  --cuore:#E0473A;
+  --notte:#15181E;
+  --display:"Archivo", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+  --matrice:"Doto", "Courier New", ui-monospace, monospace;
+  color-scheme: light;
+}
+html,body{height:100%}
+body{margin:0;background:var(--muro);color:var(--inchiostro);font-family:var(--display);overflow:hidden;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+#wrap{position:relative;height:100%;width:100%;max-width:560px;margin:0 auto;overflow:hidden}
+#game{height:100%;box-sizing:border-box;padding-block:8px 16px;padding-inline:16px;display:flex;flex-direction:column;gap:12px}
+
+.dials{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dial{border-radius:14px;padding:8px 14px 6px;display:flex;flex-direction:column;min-width:0}
+.dial small{font-family:var(--matrice);font-weight:900;font-size:11px;letter-spacing:.04em}
+.dial b{font-family:var(--matrice);font-weight:900;font-size:40px;line-height:1;text-align:right;font-variant-numeric:tabular-nums}
+.dial.pt{background:var(--notte);color:var(--led)}
+.dial.pt small{opacity:.7}
+.dial.rec{background:var(--led);color:var(--notte)}
+.dial.rec small{opacity:.65}
+.dial.rec b.vuoto{font-family:var(--display);font-size:16px;line-height:40px}
+
+.stato{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:14px}
+.cuori{display:flex;gap:6px}
+.cuori svg{width:22px;height:20px}
+.cuori .on path{fill:var(--cuore);stroke:var(--cuore)}
+.cuori .off path{fill:none;stroke:rgba(28,32,40,.35)}
+
+.scena{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:10px}
+.fumetto{position:relative;background:var(--carta);border-radius:18px;padding:22px 18px 20px;box-shadow:0 10px 24px rgba(28,32,40,.14);display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center}
+.fumetto::after{content:"";position:absolute;left:44px;bottom:-13px;border:14px solid transparent;border-top-color:var(--carta);border-bottom:0}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--grigio)}
+#frase{font-weight:900;font-size:clamp(26px,8.4vw,40px);line-height:1.1;letter-spacing:-.01em;text-wrap:balance;overflow-wrap:anywhere;min-height:2.2em;display:flex;align-items:center}
+#frase.entra{animation:entra .22s ease-out}
+@keyframes entra{from{transform:translateY(8px);opacity:.2}to{transform:none;opacity:1}}
+#esito{min-height:38px;font-size:14px;line-height:1.35;font-weight:700;display:flex;flex-direction:column;justify-content:center}
+#esito b{font-weight:900;font-size:16px}
+#esito.ok b{color:var(--giusto)}
+#esito.no b{color:var(--sbagliato)}
+.tempo{height:8px;border-radius:4px;background:rgba(28,32,40,.14);overflow:hidden;margin-top:14px}
+.tempo i{display:block;height:100%;width:100%;background:var(--inchiostro);border-radius:4px;transform-origin:left center}
+.tempo i.poco{background:var(--sbagliato)}
+
+.risposte{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.risposte.due{grid-template-columns:1fr}
+.risposte.tre button:last-child{grid-column:1 / -1}
+.risposte button{appearance:none;border:0;border-radius:14px;background:var(--inchiostro);color:var(--carta);font-family:var(--display);min-height:62px;padding:8px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;touch-action:manipulation}
+.risposte button b{font-weight:900;font-size:19px;line-height:1.1}
+.risposte button small{font-weight:500;font-size:12px;opacity:.7}
+.risposte button:focus-visible{outline:3px solid var(--led);outline-offset:3px}
+.risposte button:disabled{cursor:default;opacity:.35}
+.risposte button.ok{background:var(--giusto);opacity:1}
+.risposte button.no{background:var(--sbagliato);opacity:1}
+
+.ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(28,32,40,.5)}
+.card{background:var(--carta);border-radius:16px;padding:22px 20px 20px;width:100%;max-width:400px;max-height:100%;overflow:auto;box-sizing:border-box;box-shadow:0 18px 40px rgba(0,0,0,.25);display:flex;flex-direction:column;gap:14px}
+.card h1{margin:0;font-size:32px;line-height:1;font-weight:900;letter-spacing:-.02em;text-wrap:balance}
+.card h2{margin:0;font-size:24px;font-weight:900;letter-spacing:-.01em;text-wrap:balance}
+.card p{margin:0;font-size:15px;line-height:1.45}
+.rules{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none;font-size:15px;line-height:1.4}
+.rules li{display:flex;gap:10px;align-items:flex-start}
+.rules b{display:inline-flex;align-items:center;justify-content:center;flex:0 0 22px;height:22px;border-radius:50%;background:var(--inchiostro);color:var(--carta);font-size:12px}
+button.go{appearance:none;border:0;border-radius:12px;background:var(--inchiostro);color:var(--led);font-family:var(--display);font-weight:900;font-size:18px;padding:15px 18px;cursor:pointer;flex:0 0 auto}
+button.go:focus-visible{outline:3px solid var(--led);outline-offset:3px}
+.bigtime{font-family:var(--matrice);font-weight:900;font-size:56px;line-height:1;font-variant-numeric:tabular-nums}
+.bigtime small{font-size:22px;margin-left:6px}
+.frasario{background:var(--pagina);border:2px solid #1F3F7A;border-radius:12px;padding:10px 12px}
+.frasario .eyebrow{color:#1F3F7A;text-align:center;margin-bottom:6px}
+.frasario ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.frasario li{display:grid;grid-template-columns:86px minmax(0,1fr);gap:8px;padding:6px 0;border-top:1px solid rgba(31,63,122,.18);font-size:13px;line-height:1.3;-webkit-user-select:text;user-select:text}
+.frasario li:first-child{border-top:0}
+.frasario li b{font-weight:900}
+.frasario li span{overflow-wrap:anywhere}
+.frasario li em{display:block;font-style:normal;color:var(--grigio);font-size:12px}
+.frasario .niente{font-size:13px;text-align:center;color:var(--grigio);padding:6px 0}
+@media (max-height:600px){ #frase{min-height:1.2em} .fumetto{padding:14px 16px 12px} .risposte button{min-height:52px} .dial b{font-size:32px} .dial.rec b.vuoto{line-height:32px} }
+@media (prefers-reduced-motion:reduce){ #frase.entra{animation:none} }
+</style>
+
+</head>
+<body>
+
+<div id="wrap">
+  <div id="game">
+    <div class="dials">
+      <div class="dial pt"><small>PUNTI</small><b id="punti">0</b></div>
+      <div class="dial rec"><small>RECORD</small><b id="record" class="vuoto">da fare</b></div>
+    </div>
+    <div class="stato">
+      <div class="cuori" id="cuori" aria-label="Vite rimaste"></div>
+      <div id="conta">Frase 1 di 20</div>
+    </div>
+    <div class="scena">
+      <div class="fumetto">
+        <div class="eyebrow">Qualcuno ti dice</div>
+        <div id="frase" lang="">&nbsp;</div>
+        <div id="esito" aria-live="polite"></div>
+      </div>
+      <div class="tempo"><i id="barra"></i></div>
+    </div>
+    <div class="risposte" id="risposte"></div>
+  </div>
+
+  <div class="ov" id="start">
+    <div class="card">
+      <div class="eyebrow">Appena arrivato &middot; Fiera della Mobilit&agrave;</div>
+      <h1>Che lingua &egrave;?</h1>
+      <ul class="rules">
+        <li><b>1</b><span>Sei appena sceso dal treno e qualcuno ti parla. Leggi la frase e tocca la lingua giusta.</span></li>
+        <li><b>2</b><span>Niente inglese n&eacute; spagnolo: qui si va dal polacco al finlandese, dal greco al maltese.</span></li>
+        <li><b>3</b><span>Venti frasi, tre cuori. Le scelte aumentano, le lingue si somigliano sempre di pi&ugrave; e il tempo si accorcia. Pi&ugrave; sei veloce, pi&ugrave; punti fai.</span></li>
+      </ul>
+      <button class="go" id="play">Gioca</button>
+    </div>
+  </div>
+
+  <div class="ov" id="end" hidden>
+    <div class="card">
+      <div class="eyebrow">Fine partita</div>
+      <h2 id="endTitle">Viaggio finito</h2>
+      <div class="bigtime" id="bigTime"></div>
+      <p id="endText"></p>
+      <div class="frasario">
+        <div class="eyebrow">Il tuo frasario</div>
+        <ul id="lista"></ul>
+      </div>
+      <button class="go" id="retry">Rigioca</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+const $=id=>document.getElementById(id);
+const SENSI=['Buongiorno','Grazie mille','Quanto costa?','Dov’è la stazione?','Non capisco','Un caffè, per favore','Parli inglese?','Salute! (al brindisi)'];
+// per ogni lingua: nome, paese, codice, lingue che le somigliano, frasi [senso, testo]
+const L={
+ pl:{n:'Polacco',p:'Polonia',s:['cs','sk','hr'],f:[[0,'Dzień dobry'],[1,'Dziękuję bardzo'],[2,'Ile to kosztuje?'],[3,'Gdzie jest dworzec?'],[4,'Nie rozumiem'],[5,'Poproszę kawę'],[6,'Czy mówisz po angielsku?']]},
+ cs:{n:'Ceco',p:'Cechia',s:['sk','pl','sl'],f:[[0,'Dobrý den'],[1,'Moc děkuji'],[2,'Kolik to stojí?'],[3,'Kde je nádraží?'],[4,'Nerozumím'],[6,'Mluvíte anglicky?'],[7,'Na zdraví!']]},
+ sk:{n:'Slovacco',p:'Slovacchia',s:['cs','pl','sl'],f:[[0,'Dobrý deň'],[1,'Ďakujem pekne'],[2,'Koľko to stojí?'],[3,'Kde je stanica?'],[4,'Nerozumiem'],[6,'Hovoríte po anglicky?'],[7,'Na zdravie!']]},
+ hu:{n:'Ungherese',p:'Ungheria',s:['fi','et','tr'],f:[[0,'Jó napot'],[1,'Köszönöm szépen'],[2,'Mennyibe kerül?'],[3,'Hol van az állomás?'],[4,'Nem értem'],[5,'Egy kávét kérek'],[6,'Beszélsz angolul?'],[7,'Egészségedre!']]},
+ fi:{n:'Finlandese',p:'Finlandia',s:['et','hu','lt'],f:[[0,'Hyvää päivää'],[1,'Kiitos paljon'],[2,'Paljonko tämä maksaa?'],[3,'Missä asema on?'],[4,'En ymmärrä'],[5,'Yksi kahvi, kiitos'],[6,'Puhutko englantia?'],[7,'Kippis!']]},
+ et:{n:'Estone',p:'Estonia',s:['fi','lv','lt'],f:[[0,'Tere päevast'],[1,'Suur aitäh'],[2,'Kui palju see maksab?'],[3,'Kus on jaam?'],[4,'Ma ei saa aru'],[5,'Üks kohv, palun'],[7,'Terviseks!']]},
+ lv:{n:'Lettone',p:'Lettonia',s:['lt','et','fi'],f:[[0,'Labdien'],[1,'Liels paldies'],[2,'Cik tas maksā?'],[3,'Kur ir stacija?'],[4,'Es nesaprotu'],[5,'Vienu kafiju, lūdzu'],[7,'Priekā!']]},
+ lt:{n:'Lituano',p:'Lituania',s:['lv','et','pl'],f:[[0,'Laba diena'],[1,'Labai ačiū'],[2,'Kiek tai kainuoja?'],[3,'Kur yra stotis?'],[4,'Nesuprantu'],[6,'Ar kalbate angliškai?'],[7,'Į sveikatą!']]},
+ sv:{n:'Svedese',p:'Svezia',s:['no','da','is'],f:[[0,'God morgon'],[1,'Tack så mycket'],[2,'Vad kostar det?'],[3,'Var ligger stationen?'],[4,'Jag förstår inte'],[5,'En kaffe, tack'],[6,'Talar du engelska?']]},
+ da:{n:'Danese',p:'Danimarca',s:['no','sv','nl'],f:[[0,'Godmorgen'],[1,'Tusind tak'],[2,'Hvad koster det?'],[3,'Hvor ligger stationen?'],[5,'En kop kaffe, tak'],[6,'Taler du engelsk?']]},
+ no:{n:'Norvegese',p:'Norvegia',s:['da','sv','is'],f:[[0,'God morgen'],[1,'Tusen takk'],[2,'Hva koster det?'],[3,'Hvor er stasjonen?'],[4,'Jeg skjønner ikke'],[5,'En kaffe, takk'],[6,'Snakker du engelsk?']]},
+ is:{n:'Islandese',p:'Islanda',s:['no','sv','da'],f:[[0,'Góðan daginn'],[1,'Takk fyrir'],[2,'Hvað kostar þetta?'],[3,'Hvar er stöðin?'],[4,'Ég skil ekki'],[6,'Talarðu ensku?']]},
+ nl:{n:'Olandese',p:'Paesi Bassi',s:['da','sv','no'],f:[[0,'Goedemorgen'],[1,'Dank je wel'],[2,'Hoeveel kost het?'],[3,'Waar is het station?'],[4,'Ik begrijp het niet'],[5,'Een koffie, alstublieft'],[6,'Spreek je Engels?'],[7,'Proost!']]},
+ ro:{n:'Rumeno',p:'Romania',s:['mt','hr','sl'],f:[[0,'Bună ziua'],[1,'Mulțumesc mult'],[2,'Cât costă?'],[3,'Unde este gara?'],[4,'Nu înțeleg'],[5,'O cafea, vă rog'],[6,'Vorbiți engleză?'],[7,'Noroc!']]},
+ el:{n:'Greco',p:'Grecia',s:['bg','tr','mt'],f:[[0,'Καλημέρα'],[1,'Ευχαριστώ πολύ'],[2,'Πόσο κάνει;'],[3,'Πού είναι ο σταθμός;'],[4,'Δεν καταλαβαίνω'],[5,'Έναν καφέ, παρακαλώ'],[6,'Μιλάτε αγγλικά;']]},
+ bg:{n:'Bulgaro',p:'Bulgaria',s:['el','hr','sl'],f:[[0,'Добър ден'],[1,'Благодаря много'],[2,'Колко струва?'],[3,'Къде е гарата?'],[4,'Не разбирам'],[5,'Едно кафе, моля'],[7,'Наздраве!']]},
+ hr:{n:'Croato',p:'Croazia',s:['sl','sk','cs'],f:[[0,'Dobar dan'],[1,'Hvala lijepa'],[2,'Koliko košta?'],[3,'Gdje je kolodvor?'],[4,'Ne razumijem'],[5,'Jednu kavu, molim'],[6,'Govorite li engleski?'],[7,'Živjeli!']]},
+ sl:{n:'Sloveno',p:'Slovenia',s:['hr','sk','cs'],f:[[0,'Dober dan'],[1,'Najlepša hvala'],[2,'Koliko stane?'],[3,'Kje je postaja?'],[4,'Ne razumem'],[5,'Eno kavo, prosim'],[6,'Ali govorite angleško?'],[7,'Na zdravje!']]},
+ tr:{n:'Turco',p:'Turchia',s:['hu','fi','el'],f:[[0,'Günaydın'],[1,'Çok teşekkürler'],[2,'Ne kadar?'],[3,'İstasyon nerede?'],[4,'Anlamıyorum'],[5,'Bir kahve, lütfen'],[7,'Şerefe!']]},
+ ga:{n:'Irlandese',p:'Irlanda',s:['mt','is','nl'],f:[[0,'Dia duit'],[1,'Go raibh maith agat'],[3,'Cá bhfuil an stáisiún?'],[4,'Ní thuigim'],[5,'Caife, le do thoil'],[6,'An bhfuil Béarla agat?'],[7,'Sláinte!']]},
+ mt:{n:'Maltese',p:'Malta',s:['ga','ro','tr'],f:[[0,'Bonġu'],[1,'Grazzi ħafna'],[2,'Kemm jiswa?'],[3,'Fejn hi l-istazzjon?'],[4,'Ma nifhimx'],[5,'Kafè, jekk jogħġbok'],[6,'Titkellem bl-Ingliż?'],[7,'Saħħa!']]},
+};
+const CODICI=Object.keys(L), TOT=20, KEY='che-lingua-e';
+const CUORE='<svg viewBox="0 0 24 22"><path stroke-width="2" d="M12 20C4 14 2 10 2 6.8 2 4 4.2 2 6.8 2 8.9 2 10.8 3.2 12 5c1.2-1.8 3.1-3 5.2-3C19.8 2 22 4 22 6.8 22 10 20 14 12 20z"/></svg>';
+let best=0; try{ best=parseInt(localStorage.getItem(KEY)||'0',10)||0; }catch(_){}
+let S=null, raf=0;
+
+const mescola=a=>{ for(let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; };
+// livello: quante scelte, quante lingue simili tra le sbagliate, quanti secondi
+function livello(i){
+  if(i<4)  return {n:2,sim:0,t:7};
+  if(i<9)  return {n:3,sim:1,t:6.5};
+  if(i<14) return {n:4,sim:1,t:6};
+  return {n:4,sim:2,t:Math.max(4,5.5-(i-14)*.3)};
+}
+function mazzo(){
+  // venti frasi, mai la stessa lingua a meno di quattro frasi di distanza, mai lo stesso senso due volte di fila
+  const out=[]; let guard=0;
+  while(out.length<TOT && guard++<5000){
+    const c=CODICI[(Math.random()*CODICI.length)|0];
+    if(out.slice(-4).some(q=>q.c===c)) continue;
+    if(out.filter(q=>q.c===c).length>=2) continue;
+    const f=L[c].f[(Math.random()*L[c].f.length)|0];
+    if(out.length && out[out.length-1].s===f[0]) continue;
+    if(out.some(q=>q.c===c&&q.s===f[0])) continue;
+    out.push({c,s:f[0],x:f[1]});
+  }
+  return out;
+}
+function scelte(q,lv){
+  const simili=mescola(L[q.c].s.slice()).slice(0,lv.sim);
+  const vietate=new Set([q.c,...simili,...(lv.sim?[]:L[q.c].s)]);
+  // alfabeti diversi dal latino si riconoscono a colpo d'occhio: accanto ci va sempre l'altro
+  if(q.c==='el'&&!simili.includes('bg')) simili[0]='bg';
+  if(q.c==='bg'&&!simili.includes('el')) simili[0]='el';
+  const altre=mescola(CODICI.filter(c=>!vietate.has(c)&&!simili.includes(c)));
+  return mescola([q.c,...simili,...altre].slice(0,lv.n));
+}
+
+function record(){ const r=$('record'); const v=Math.max(best,S?S.punti:0);
+  if(v>0){ r.textContent=v; r.classList.remove('vuoto'); } else { r.textContent='da fare'; r.classList.add('vuoto'); } }
+function hud(){
+  $('punti').textContent=S.punti; record();
+  $('cuori').innerHTML=[0,1,2].map(i=>`<span class="${i<S.vite?'on':'off'}">${CUORE}</span>`).join('');
+  $('conta').textContent=`Frase ${Math.min(S.i+1,TOT)} di ${TOT}`;
+}
+function start(){
+  cancelAnimationFrame(raf);
+  S={q:mazzo(),i:0,punti:0,vite:3,giuste:0,viste:[],attesa:false,fine:0,dur:0};
+  hud(); domanda();
+}
+function domanda(){
+  const q=S.q[S.i], lv=livello(S.i), opz=scelte(q,lv);
+  S.attesa=false; S.dur=lv.t*1000; S.fine=performance.now()+S.dur;
+  const fr=$('frase'); fr.textContent=q.x; fr.lang=q.c; fr.classList.remove('entra'); void fr.offsetWidth; fr.classList.add('entra');
+  const es=$('esito'); es.className=''; es.textContent='';
+  const box=$('risposte'); box.className='risposte'+(lv.n===2?' due':lv.n===3?' tre':''); box.textContent='';
+  for(const c of opz){
+    const b=document.createElement('button'); b.type='button'; b.dataset.c=c;
+    b.innerHTML=`<b>${L[c].n}</b><small>${L[c].p}</small>`;
+    b.addEventListener('click',()=>rispondi(c)); box.append(b);
+  }
+  hud(); cancelAnimationFrame(raf); raf=requestAnimationFrame(tic);
+}
+function tic(now){
+  if(!S||S.attesa) return;
+  const r=Math.max(0,(S.fine-now)/S.dur), b=$('barra');
+  b.style.transform=`scaleX(${r})`; b.classList.toggle('poco',r<.3);
+  if(r<=0){ rispondi(null); return; }
+  raf=requestAnimationFrame(tic);
+}
+function rispondi(c){
+  if(!S||S.attesa) return;
+  S.attesa=true; cancelAnimationFrame(raf);
+  const q=S.q[S.i], ok=c===q.c, resto=Math.max(0,(S.fine-performance.now())/S.dur);
+  for(const b of $('risposte').children){ b.disabled=true; if(b.dataset.c===q.c) b.classList.add('ok'); else if(b.dataset.c===c) b.classList.add('no'); }
+  const es=$('esito'); let guadagno=0;
+  if(ok){ guadagno=10+Math.round(resto*10); S.punti+=guadagno; S.giuste++; S.viste.push(q);
+    try{navigator.vibrate&&navigator.vibrate(12);}catch(_){} }
+  else { S.vite--; try{navigator.vibrate&&navigator.vibrate([30,40,30]);}catch(_){} }
+  es.className=ok?'ok':'no';
+  es.innerHTML=`<b>${ok?'Giusto! +'+guadagno : c===null?'Tempo scaduto: era '+L[q.c].n.toLowerCase() : 'No, era '+L[q.c].n.toLowerCase()}</b><span>Vuol dire: ${SENSI[q.s]}</span>`;
+  hud();
+  const s=S;
+  setTimeout(()=>{ if(S!==s) return;
+    if(S.vite<=0||S.i>=TOT-1) end(); else { S.i++; domanda(); } }, ok?1100:2000);
+}
+function end(){
+  const n=S.punti, rec=n>best; if(rec){ best=n; try{localStorage.setItem(KEY,String(best));}catch(_){} }
+  const k=S.giuste, viva=S.vite>0;
+  $('endTitle').textContent= rec&&n>0 ? 'Nuovo record!' : viva ? (k===TOT?'Poliglotta!':'Ce l’hai fatta!') : 'Ti sei perso';
+  $('bigTime').innerHTML=`${n}<small>${n===1?'punto':'punti'}</small>`;
+  const lingue=new Set(S.viste.map(q=>q.c)).size;
+  $('endText').textContent= k===0 ? 'Nessuna lingua riconosciuta, per ora. Riprova: le prime frasi sono le più facili.'
+    : rec ? `Hai riconosciuto ${k} ${k===1?'frase':'frasi'} su ${TOT} in ${lingue} ${lingue===1?'lingua':'lingue'} diverse.`
+    : `Hai riconosciuto ${k} ${k===1?'frase':'frasi'} su ${TOT}: il tuo record resta ${best}.`;
+  const ul=$('lista'); ul.textContent='';
+  if(!S.viste.length){ const li=document.createElement('div'); li.className='niente'; li.textContent='Qui compaiono le frasi che riconosci.'; ul.append(li); }
+  const una=new Map(); for(const q of S.viste) una.set(q.c,q);
+  for(const q of una.values()){
+    const li=document.createElement('li'), b=document.createElement('b'), sp=document.createElement('span'), em=document.createElement('em');
+    b.textContent=L[q.c].n; sp.textContent=q.x; sp.lang=q.c; em.textContent=SENSI[q.s]; sp.append(em); li.append(b,sp); ul.append(li);
+  }
+  record(); $('end').hidden=false; setTimeout(()=>$('retry').focus(),50);
+}
+$('play').onclick=()=>{ $('start').hidden=true; start(); };
+$('retry').onclick=()=>{ $('end').hidden=true; start(); };
+// anteprima ferma dietro la schermata iniziale
+S={q:[{c:'fi',s:3,x:'Missä asema on?'}],i:0,punti:0,vite:3,giuste:0,viste:[],attesa:true};
+(()=>{ const q=S.q[0]; $('frase').textContent=q.x; hud();
+  const box=$('risposte'); box.className='risposte due';
+  for(const c of ['et','fi']){ const b=document.createElement('button'); b.type='button'; b.disabled=true; b.innerHTML=`<b>${L[c].n}</b><small>${L[c].p}</small>`; box.append(b); } })();
+window.__game={get S(){return S},L,SENSI,mazzo,scelte,livello,rispondi,start};
+})();
+</script>
+
+</body>
+</html>
