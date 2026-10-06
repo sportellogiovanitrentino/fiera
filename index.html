@@ -80,7 +80,7 @@
 <script>
   // ELENCO DEI GIOCHI
   // Per ogni gioco: nome da mostrare, una riga su cosa si fa,
-  // il nome della cartella del gioco caricata su GitHub e il disegnino (aereo, viaggiatori, biglietto).
+  // il nome della cartella del gioco caricata su GitHub e il disegnino (aereo, viaggiatori, tabellone).
   // I giochi si dispongono da soli su tre colonne sotto il mappamondo.
   var GIOCHI = [
     {
@@ -96,10 +96,10 @@
       disegno: "viaggiatori"
     },
     {
-      nome: "Tris di Biglietti",
-      descrizione: "Tre biglietti per la stessa città e il viaggio parte.",
-      cartella: "tris-di-biglietti",
-      disegno: "biglietto"
+      nome: "Il Tuo Volo",
+      descrizione: "Tocca il tuo volo sul tabellone prima che cambi.",
+      cartella: "il-tuo-volo",
+      disegno: "tabellone"
     },
     {
       nome: "Giro XBus",
@@ -148,7 +148,7 @@
     bus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#123a78" d="M5 3h14a2 2 0 0 1 2 2v11a2 2 0 0 1-1 1.730V20a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-2H7v2a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-2.270A2 2 0 0 1 3 16V5a2 2 0 0 1 2-2zm0 3v5h14V6zm2.500 7.500a1.500 1.500 0 1 0 0 3 1.500 1.500 0 0 0 0-3zm9 0a1.500 1.500 0 1 0 0 3 1.500 1.500 0 0 0 0-3z"/></svg>',
     valigia: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#123a78" d="M9 3h6a1 1 0 0 1 1 1v3h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3V4a1 1 0 0 1 1-1zm1 2v2h4V5z"/></svg>',
     timbro: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="6" r="3.400" fill="#123a78"/><rect x="10.500" y="8" width="3" height="6.500" fill="#123a78"/><rect x="5" y="14" width="14" height="4.200" rx="1.300" fill="#123a78"/><rect x="4" y="19.500" width="16" height="2" rx="1" fill="#123a78"/></svg>',
-    biglietto: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#123a78" d="M3 6h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4zm11 2v1.500h1.500V8zm0 3.250v1.500h1.500v-1.500zm0 3.250V16h1.500v-1.500z"/></svg>'
+    tabellone: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#123a78" d="M3 4h18a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zm2 3v2h9V7zm11 0v2h3V7zM5 11v2h9v-2zm11 0v2h3v-2zM5 15v2h9v-2zm11 0v2h3v-2z"/></svg>'
   };
 
   var stage = document.getElementById("stage");
